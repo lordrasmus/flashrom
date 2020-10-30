@@ -35,6 +35,7 @@ static int winwond_print_status_regs( struct flashrom_flashctx * flash ){
 	uint8_t cmd[10];
 	memset( cmd , 0 , sizeof( cmd ));
 
+
 	cmd[0] = 0x99;
 	ret = spi_send_command(flash, 1, 1, cmd, rd);
 	if (ret != 0){
@@ -76,6 +77,28 @@ static int winwond_print_status_regs( struct flashrom_flashctx * flash ){
 	return 0;
 
 }
+
+
+static int winwond_print_uniqueid( struct flashrom_flashctx * flash ){
+
+	uint8_t rd[10];
+	uint8_t cmd[10];
+	memset( cmd , 0 , sizeof( cmd ));
+
+	cmd[0] = 0x4B;
+	int ret = spi_send_command(flash, 5, 8, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	printf("    UniqueID : 0x%02X%02X%02X%02X%02X%02X%02X%02X\n",rd[0],rd[1],rd[2],rd[3],rd[4],rd[5],rd[6],rd[7]);
+
+
+	return 0;
+}
+
+
+
 /**
  * List of supported flash chips.
  *
@@ -16882,6 +16905,7 @@ const struct flashchip flashchips[] = {
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.print_status_register = winwond_print_status_regs,
+		.print_uniqueid = winwond_print_uniqueid,
 		.voltage	= {2700, 3600},
 	},
 

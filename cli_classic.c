@@ -155,6 +155,27 @@ static void show_status_regs( struct flashctx *fill_flash ) {
 	}
 }
 
+static void show_uniqueid( struct flashctx *fill_flash ) {
+
+	printf("\nshow_uniqueid\n\n");
+	if ( fill_flash->chip->print_uniqueid != 0 ) {
+		fill_flash->chip->print_uniqueid( fill_flash );
+	}else{
+		printf("  show_uniqueid not supported on %s %s\n\n", fill_flash->chip->vendor, fill_flash->chip->name );
+
+		const struct flashchip *chip;
+		printf("  only supported on :\n");
+		for (chip = flashchips ; chip && chip->name; chip++) {
+			if ( chip->print_uniqueid != 0 ){
+				printf("     %s %s\n", chip->vendor, chip->name );
+			}
+		}
+	}
+}
+
+
+
+
 int main(int argc, char *argv[])
 {
 	const struct flashchip *chip = NULL;
@@ -172,7 +193,7 @@ int main(int argc, char *argv[])
 	int set_wp_range = 0, set_wp_region = 0, wp_list = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
-	int status_regs = 0;
+	int status_regs = 0, uniqueid = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	enum {
@@ -189,6 +210,7 @@ int main(int argc, char *argv[])
 		OPTION_WP_DISABLE,
 		OPTION_WP_LIST,
 		OPTION_STATUS_REGS,
+		OPTION_UNIQUEID,
 	};
 	int ret = 0;
 	unsigned int wp_start = 0, wp_len = 0;
@@ -220,6 +242,7 @@ int main(int argc, char *argv[])
 		{"wp-disable", 		0, 0, OPTION_WP_DISABLE},
 		{"wp-list", 		0, 0, OPTION_WP_LIST},
 		{"status-regs", 		0, 0, OPTION_STATUS_REGS},
+		{"uniqueid", 		0, 0, OPTION_UNIQUEID},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -362,6 +385,9 @@ int main(int argc, char *argv[])
 			break;
 		case OPTION_STATUS_REGS:
 			status_regs = 1;
+			break;
+		case OPTION_UNIQUEID:
+			uniqueid = 1;
 			break;
 		case OPTION_WP_LIST:
 			wp_list = 1;
@@ -661,7 +687,7 @@ int main(int argc, char *argv[])
 
 	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size
 	      | set_wp_range | set_wp_region | set_wp_enable |
-	      set_wp_disable | wp_status | wp_list | status_regs)) {
+	      set_wp_disable | wp_status | wp_list | status_regs | uniqueid)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -687,6 +713,10 @@ int main(int argc, char *argv[])
 
 	if ( status_regs ) {
 		show_status_regs( fill_flash );
+	}
+
+	if ( uniqueid ) {
+		show_uniqueid( fill_flash );
 	}
 
 	if (flash_name) {
