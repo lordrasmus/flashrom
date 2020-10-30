@@ -36,13 +36,15 @@ static int winwond_print_status_regs( struct flashrom_flashctx * flash ){
 	memset( cmd , 0 , sizeof( cmd ));
 
 
+	// reset flash chip
 	cmd[0] = 0x99;
 	ret = spi_send_command(flash, 1, 1, cmd, rd);
 	if (ret != 0){
 		msg_cerr("Reading the status register failed!\n");
 		return 1;
 	}
-	sleep(1);
+
+	usleep(200 * 1000 ); // sleep 100 ms
 
 	cmd[0] = 0x05;
 	ret = spi_send_command(flash, 1, 1, cmd, rd);
