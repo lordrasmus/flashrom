@@ -18,10 +18,64 @@
  * GNU General Public License for more details.
  */
 
+#include <string.h>
+#include <unistd.h>
+
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
 
+
+static int winwond_print_status_regs( struct flashrom_flashctx * flash ){
+
+	unsigned char rd[10];
+
+	int ret;
+
+	uint8_t cmd[10];
+	memset( cmd , 0 , sizeof( cmd ));
+
+	cmd[0] = 0x99;
+	ret = spi_send_command(flash, 1, 1, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	sleep(1);
+
+	cmd[0] = 0x05;
+	ret = spi_send_command(flash, 1, 1, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	printf("    SR1 : 0x%02X\n",rd[0]);
+
+	cmd[0] = 0x35;
+	ret = spi_send_command(flash, 1, 1, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	printf("    SR2 : 0x%02X\n",rd[0]);
+
+	cmd[0] = 0x15;
+	ret = spi_send_command(flash, 1, 1, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	printf("    SR3 : 0x%02X\n",rd[0]);
+
+	cmd[0] = 0x4B;
+	ret = spi_send_command(flash, 5, 8, cmd, rd);
+	if (ret != 0){
+		msg_cerr("Reading the status register failed!\n");
+		return 1;
+	}
+	return 0;
+
+}
 /**
  * List of supported flash chips.
  *
@@ -16827,6 +16881,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.print_status_register = winwond_print_status_regs,
 		.voltage	= {2700, 3600},
 	},
 
