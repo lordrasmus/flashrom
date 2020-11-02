@@ -17231,6 +17231,9 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.print_status_register = winwond_print_status_regs,
+		.print_uniqueid = winwond_print_uniqueid,
+		.print_security_regs = winwond_print_security_regs,
 		.voltage	= {2700, 3600},
 	},
 
